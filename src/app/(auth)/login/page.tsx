@@ -1,23 +1,12 @@
-// 'use client'
-import { websites } from '@/lib/data'
-// import { useState } from 'react'
+import FormLogin from "./formLogin";
 
-export default function LoginPage() {
-  // const [email, setEmail] = useState('duthanhduoc@gmail.com')
+const LoginPage = () => {
   return (
-    <div>
-      Login page
-      <ul>
-        {websites.map((item) => {
-          return (
-            <li key={item.url}>
-              <a href={item.url} target='_blank' rel='noreferrer'>
-                {item.name}
-              </a>
-            </li>
-          )
-        })}
-      </ul>
+    <div className="flex flex-col justify-center items-center">
+      <h1 className="text-xl font-semibold">Login</h1>
+      <FormLogin />
     </div>
-  )
-}
+  );
+};
+
+export default LoginPage;
