@@ -52,6 +52,21 @@ const FormLogin = () => {
       toast({
         title: "Login succes!",
       });
+      const resultFormNextServer = await fetch("/api/auth", {
+        method: "POST",
+        body: JSON.stringify(result),
+      }).then(async (res) => {
+        const payload = await res.json();
+        const data = {
+          status: res.status,
+          payload,
+        };
+        if (!res.ok) {
+          throw data;
+        }
+        return data;
+      });
+      console.log(resultFormNextServer);
     } catch (error: any) {
       const errors = error.payload.errors as {
         field: string;
