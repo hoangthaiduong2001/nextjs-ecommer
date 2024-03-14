@@ -16,9 +16,11 @@ import envConfig from "@/config";
 import { useToast } from "@/components/ui/use-toast";
 import { LoginBody } from "./const";
 import { LoginBodyType } from "./type";
+import { useAppContext } from "@/app/AppProvider";
 
 const FormLogin = () => {
   const { toast } = useToast();
+  const { setSessionToken } = useAppContext();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -66,7 +68,7 @@ const FormLogin = () => {
         }
         return data;
       });
-      console.log(resultFormNextServer);
+      setSessionToken(resultFormNextServer.payload.data.token);
     } catch (error: any) {
       const errors = error.payload.errors as {
         field: string;

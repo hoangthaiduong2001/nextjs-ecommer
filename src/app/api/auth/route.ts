@@ -12,13 +12,10 @@ export async function POST(request: Request) {
     );
   }
 
-  return Response.json(
-    { res },
-    {
-      status: 200,
-      headers: {
-        "Set-Cookie": `sessionToken=${sessionToken}`,
-      },
-    }
-  );
+  return Response.json(res.payload, {
+    status: 200,
+    headers: {
+      "Set-Cookie": `sessionToken=${sessionToken}; Path=/; HttpOnly`,
+    },
+  });
 }
