@@ -16,8 +16,13 @@ import { Input } from "@/components/ui/input";
 import envConfig from "@/config";
 import { RegisterBodyType } from "./type";
 import { RegisterBody } from "./const";
+import authApiRequest from "@/apiRequest/auth";
+import { toast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { clientSessionToken } from "@/lib/http";
 
 const FormRegister = () => {
+  const router = useRouter();
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
@@ -29,17 +34,41 @@ const FormRegister = () => {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
-    const result = await fetch(
-      `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`,
-      {
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
+    try {
+      const result = await authApiRequest.register(values);
+      toast({
+        title: "Register succes!",
+      });
+      await authApiRequest.auth({ sessionToken: result.payload.data.token });
+      clientSessionToken.value = result.payload.data.token;
+
+      router.push("/me");
+    } catch (error: any) {
+      const errors = error.payload.errors as {
+        field: string;
+        messgae: string;
+      }[];
+      const status = error.status as number;
+      if (status === 422) {
+        errors.forEach((error) => {
+          form.setError(error.field as "email" | "password", {
+            type: "server",
+            message: error.messgae,
+          });
+        });
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Error auth!!!",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Error auth!!!",
+        });
       }
-    ).then((res) => res.json);
-    console.log(result);
+    }
   };
   return (
     <Form {...form}>

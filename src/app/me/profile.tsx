@@ -1,11 +1,17 @@
 "use client";
 
-import React from "react";
-import { useAppContext } from "../AppProvider";
+import React, { useEffect } from "react";
+import accountApiRequest from "@/apiRequest/account";
+import { clientSessionToken } from "@/lib/http";
 
 const Profile = () => {
-  const { sessionToken } = useAppContext();
-  console.log(sessionToken);
+  useEffect(() => {
+    const fetchRequest = async () => {
+      const result = await accountApiRequest.meClient();
+      console.log(result);
+    };
+    fetchRequest();
+  }, []);
   return <div>Profile</div>;
 };
 

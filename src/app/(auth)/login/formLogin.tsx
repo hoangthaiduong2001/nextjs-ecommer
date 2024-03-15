@@ -16,11 +16,13 @@ import envConfig from "@/config";
 import { useToast } from "@/components/ui/use-toast";
 import { LoginBody } from "./const";
 import { LoginBodyType } from "./type";
-import { useAppContext } from "@/app/AppProvider";
+import authApiRequest from "@/apiRequest/auth";
+import { useRouter } from "next/navigation";
+import { clientSessionToken } from "@/lib/http";
 
 const FormLogin = () => {
   const { toast } = useToast();
-  const { setSessionToken } = useAppContext();
+  const router = useRouter();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -31,44 +33,14 @@ const FormLogin = () => {
 
   const onSubmit = async (values: LoginBodyType) => {
     try {
-      const result = await fetch(
-        `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-        {
-          body: JSON.stringify(values),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-        }
-      ).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          status: res.status,
-          payload,
-        };
-        if (!res.ok) {
-          throw data;
-        }
-        return data;
-      });
+      const result = await authApiRequest.login(values);
       toast({
         title: "Login succes!",
       });
-      const resultFormNextServer = await fetch("/api/auth", {
-        method: "POST",
-        body: JSON.stringify(result),
-      }).then(async (res) => {
-        const payload = await res.json();
-        const data = {
-          status: res.status,
-          payload,
-        };
-        if (!res.ok) {
-          throw data;
-        }
-        return data;
-      });
-      setSessionToken(resultFormNextServer.payload.data.token);
+      await authApiRequest.auth({ sessionToken: result.payload.data.token });
+      clientSessionToken.value = result.payload.data.token;
+
+      router.push("/me");
     } catch (error: any) {
       const errors = error.payload.errors as {
         field: string;
