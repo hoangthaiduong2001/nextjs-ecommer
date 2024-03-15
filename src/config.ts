@@ -9,7 +9,6 @@ const configProject = configSchema.safeParse({
 });
 
 if (!configProject.success) {
-  console.log("errorrr");
   throw new Error("Error is env endpoint");
 }
 
