@@ -13,15 +13,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
 import { RegisterBodyType } from "./type";
 import { RegisterBody } from "./const";
 import authApiRequest from "@/apiRequest/auth";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { clientSessionToken } from "@/lib/http";
+import { handleErrorApi } from "@/lib/utils";
+import { useState } from "react";
 
 const FormRegister = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -34,6 +36,8 @@ const FormRegister = () => {
   });
 
   const onSubmit = async (values: RegisterBodyType) => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const result = await authApiRequest.register(values);
       toast({
@@ -44,30 +48,9 @@ const FormRegister = () => {
 
       router.push("/me");
     } catch (error: any) {
-      const errors = error.payload.errors as {
-        field: string;
-        messgae: string;
-      }[];
-      const status = error.status as number;
-      if (status === 422) {
-        errors.forEach((error) => {
-          form.setError(error.field as "email" | "password", {
-            type: "server",
-            message: error.messgae,
-          });
-        });
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Error auth!!!",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Error auth!!!",
-        });
-      }
+      handleErrorApi({ error, setError: form.setError });
+    } finally {
+      setIsLoading(false);
     }
   };
   return (

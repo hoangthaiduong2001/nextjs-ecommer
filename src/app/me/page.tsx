@@ -7,7 +7,7 @@ import accountApiRequest from "@/apiRequest/account";
 const MeProfile = async () => {
   const cookieStore = cookies();
   const sessionToken = cookieStore.get("sessionToken");
-  const result = accountApiRequest.me(sessionToken?.value ?? "");
+  const result = await accountApiRequest.me(sessionToken?.value ?? "");
   return (
     <div>
       <Profile />

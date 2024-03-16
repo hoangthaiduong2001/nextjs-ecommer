@@ -19,8 +19,11 @@ import { LoginBodyType } from "./type";
 import authApiRequest from "@/apiRequest/auth";
 import { useRouter } from "next/navigation";
 import { clientSessionToken } from "@/lib/http";
+import { handleErrorApi } from "@/lib/utils";
+import { useState } from "react";
 
 const FormLogin = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<LoginBodyType>({
@@ -32,6 +35,8 @@ const FormLogin = () => {
   });
 
   const onSubmit = async (values: LoginBodyType) => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const result = await authApiRequest.login(values);
       toast({
@@ -42,30 +47,9 @@ const FormLogin = () => {
 
       router.push("/me");
     } catch (error: any) {
-      const errors = error.payload.errors as {
-        field: string;
-        messgae: string;
-      }[];
-      const status = error.status as number;
-      if (status === 422) {
-        errors.forEach((error) => {
-          form.setError(error.field as "email" | "password", {
-            type: "server",
-            message: error.messgae,
-          });
-        });
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Error auth!!!",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Error auth!!!",
-        });
-      }
+      handleErrorApi({ error, setError: form.setError });
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
