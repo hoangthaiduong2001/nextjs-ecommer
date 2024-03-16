@@ -1,5 +1,10 @@
 import http from "@/lib/http";
-import { LoginBodyType, LoginResType, RegisterResType } from "./type";
+import {
+  LoginBodyType,
+  LoginResType,
+  MessageResType,
+  RegisterResType,
+} from "./type";
 import { RegisterBodyType } from "@/app/(auth)/register/type";
 
 const authApiRequest = {
@@ -10,6 +15,24 @@ const authApiRequest = {
     http.post("/api/auth", body, {
       baseUrl: "",
     }),
+  logoutFromNextServerToServer: (sessionToken: string) =>
+    http.post<MessageResType>(
+      "/auth/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      }
+    ),
+  logoutFromNextClientToNextServer: () =>
+    http.post<MessageResType>(
+      "/api/auth/logout",
+      {},
+      {
+        baseUrl: "",
+      }
+    ),
 };
 
 export default authApiRequest;
