@@ -100,8 +100,6 @@ const request = async <Response>(
       throw new EntityError(
         data as { status: 422; payload: EntityErrorPayload }
       );
-    } else {
-      throw new HttpError(data);
     }
   }
 
