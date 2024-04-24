@@ -7,6 +7,7 @@ type CustomOptions = Omit<RequestInit, "method"> & {
 };
 
 const ENTITY_ERROR_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
 
 type EntityErrorPayload = {
   message: string;
@@ -60,6 +61,8 @@ class SessionToken {
 
 export const clientSessionToken = new SessionToken();
 
+let clientLogoutRequest = null;
+
 const request = async <Response>(
   method: "GET" | "PUT" | "POST" | "DELETE",
   url: string,
@@ -100,6 +103,22 @@ const request = async <Response>(
       throw new EntityError(
         data as { status: 422; payload: EntityErrorPayload }
       );
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      if (typeof window !== "undefined") {
+        if (!clientLogoutRequest) {
+          await fetch("api/auth/logout", {
+            method: "POST",
+            body: JSON.stringify({ force: true }),
+            headers: {
+              ...baseHeaders,
+            },
+          });
+          clientSessionToken.value = "";
+          location.href = "/login";
+        }
+      }
+    } else {
+      throw new HttpError(data);
     }
   }
 
